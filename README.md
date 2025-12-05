@@ -27,7 +27,7 @@ Japanese address geocoding program using ZENRIN Maps API. Converts Japanese addr
 
 3. **Edit `.env` with your API credentials**:
    ```bash
-   ZENRIN_API_DOMAIN=api.zmaps.jp
+   ZENRIN_API_DOMAIN=web.zmaps-api.com
    ZENRIN_API_KEY=your_api_key_here
    ZENRIN_AUTH_METHOD=ip
    ```
@@ -70,7 +70,8 @@ Edit `.env` with your credentials:
 
 ```bash
 # API Configuration (required)
-ZENRIN_API_DOMAIN=api.zmaps.jp
+# Production: web.zmaps-api.com | Testing: test-web.zmaps-api.com
+ZENRIN_API_DOMAIN=web.zmaps-api.com
 ZENRIN_API_KEY=your_api_key_here
 
 # Authentication Method (default: ip)
@@ -121,7 +122,7 @@ Authenticates requests based on IP address. Configure allowed IPs in the ZENRIN 
 - `Authorization: ip`
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --auth-method ip --address "東京都千代田区淡路町2-101"
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method ip --address "東京都千代田区淡路町2-101"
 ```
 
 ### 2. Referer Restriction
@@ -134,7 +135,7 @@ Authenticates requests based on the Referer header. Configure allowed referrers 
 - `Referer: https://example.com`
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --auth-method referer --referer "https://example.com" --address "東京都千代田区淡路町2-101"
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method referer --referer "https://example.com" --address "東京都千代田区淡路町2-101"
 ```
 
 ### 3. OAuth 2.0
@@ -146,7 +147,7 @@ Authenticates using OAuth 2.0 bearer token. Configure OAuth 2.0 in the ZENRIN co
 - `Authorization: Bearer YOUR_OAUTH_TOKEN`
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --auth-method bearer --token YOUR_OAUTH_TOKEN --address "東京都千代田区淡路町2-101"
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method bearer --token YOUR_OAUTH_TOKEN --address "東京都千代田区淡路町2-101"
 ```
 
 ## Proxy Configuration
@@ -173,13 +174,13 @@ The program reads the `http_proxy` and `https_proxy` environment variables via `
 ### Interactive Mode
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --interactive
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --interactive
 ```
 
 ### Single Address
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --address "東京都千代田区淡路町2-101"
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --address "東京都千代田区淡路町2-101"
 ```
 
 ### Batch Processing
@@ -195,21 +196,22 @@ Create a text file with addresses (one per line):
 Run batch geocoding:
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --batch addresses.txt
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --batch addresses.txt
 ```
 
 ### Save Results to JSON
 
 ```bash
-uv run python geocoding.py --domain api.zmaps.jp --key YOUR_API_KEY --address "東京都千代田区淡路町2-101" --output result.json
+uv run python geocoding.py --domain web.zmaps-api.com --key YOUR_API_KEY --address "東京都千代田区淡路町2-101" --output result.json
 ```
 
 ## Command Line Options
 
 All options can be set via command-line arguments or in the `.env` file. Command-line arguments take precedence over `.env` settings.
 
-- `--domain`: API domain (required, e.g., `api.zmaps.jp`)
+- `--domain`: API domain (required, e.g., `web.zmaps-api.com`)
   - **Env**: `ZENRIN_API_DOMAIN`
+  - Production: `web.zmaps-api.com` | Testing: `test-web.zmaps-api.com`
 - `--key`: API key (required, sent via `x-api-key` header)
   - **Env**: `ZENRIN_API_KEY`
 - `--auth-method`: Authentication method - `ip` (default), `referer`, or `bearer`

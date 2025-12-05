@@ -27,7 +27,7 @@ class ZenrinGeocoder:
         Initialize the geocoder
 
         Args:
-            api_domain: API domain (e.g., 'api.zmaps.jp')
+            api_domain: API domain (e.g., 'web.zmaps-api.com')
             api_key: API key (sent via x-api-key header)
             auth_method: Authentication method ('ip', 'referer', or 'bearer')
             referer: Referer URL (required when auth_method='referer')
@@ -207,13 +207,13 @@ Examples:
   %(prog)s --address "東京都千代田区淡路町2-101"
 
   # IP-based authentication
-  %(prog)s --domain api.zmaps.jp --key YOUR_API_KEY --auth-method ip --address "東京都千代田区淡路町2-101"
+  %(prog)s --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method ip --address "東京都千代田区淡路町2-101"
 
   # Referer-based authentication
-  %(prog)s --domain api.zmaps.jp --key YOUR_API_KEY --auth-method referer --referer "https://example.com" --address "東京都千代田区淡路町2-101"
+  %(prog)s --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method referer --referer "https://example.com" --address "東京都千代田区淡路町2-101"
 
   # OAuth 2.0 authentication
-  %(prog)s --domain api.zmaps.jp --key YOUR_API_KEY --auth-method bearer --token YOUR_TOKEN --address "東京都千代田区淡路町2-101"
+  %(prog)s --domain web.zmaps-api.com --key YOUR_API_KEY --auth-method bearer --token YOUR_TOKEN --address "東京都千代田区淡路町2-101"
 
   # Batch processing
   %(prog)s --batch addresses.txt --output results.json
@@ -223,7 +223,7 @@ Examples:
         """
     )
 
-    parser.add_argument('--domain', help='API domain (e.g., api.zmaps.jp) [env: ZENRIN_API_DOMAIN]')
+    parser.add_argument('--domain', help='API domain (e.g., web.zmaps-api.com) [env: ZENRIN_API_DOMAIN]')
     parser.add_argument('--key', help='API key (sent via x-api-key header) [env: ZENRIN_API_KEY]')
     parser.add_argument('--auth-method', choices=['ip', 'referer', 'bearer'],
                         help='Authentication method [env: ZENRIN_AUTH_METHOD]')
