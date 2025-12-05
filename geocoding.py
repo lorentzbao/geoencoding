@@ -117,7 +117,23 @@ class ZenrinGeocoder:
                                    proxies=self.proxies if self.proxies else None,
                                    verify=self.verify_ssl, timeout=10)
             response.raise_for_status()
-            return response.json()
+
+            # Parse JSON response
+            data = response.json()
+
+            # Extract items from ZENRIN API response structure
+            # Response format: {"status": "...", "result": {"info": {...}, "item": [...]}}
+            if 'result' in data and 'item' in data['result']:
+                items = data['result']['item']
+                # Return first item for single address geocoding
+                if items and len(items) > 0:
+                    return items[0]
+                else:
+                    return {'error': 'No results found'}
+            else:
+                # If response structure is different, return as-is
+                return data
+
         except requests.exceptions.HTTPError as e:
             # Return detailed error information
             error_detail = {
@@ -164,7 +180,18 @@ class ZenrinGeocoder:
                                    proxies=self.proxies if self.proxies else None,
                                    verify=self.verify_ssl, timeout=30)
             response.raise_for_status()
-            return response.json()
+
+            # Parse JSON response
+            data = response.json()
+
+            # Extract items from ZENRIN API response structure
+            # Response format: {"status": "...", "result": {"info": {...}, "item": [...]}}
+            if 'result' in data and 'item' in data['result']:
+                return data['result']['item']
+            else:
+                # If response structure is different, return as-is
+                return [data]
+
         except requests.exceptions.HTTPError as e:
             # Return detailed error information
             error_detail = {
@@ -206,28 +233,41 @@ def format_single_result(item: Dict) -> str:
     """Format a single result item"""
     output = []
 
+    # Full address
     if 'address' in item:
         output.append(f"住所: {item['address']}")
 
-    if 'coordinates' in item:
-        coords = item['coordinates']
+    # Coordinates (API uses match_position array)
+    if 'match_position' in item and item['match_position']:
+        coords = item['match_position']
         output.append(f"経度: {coords[0]}")
         output.append(f"緯度: {coords[1]}")
 
+    # Match level
     if 'match_level' in item:
         output.append(f"マッチレベル: {item['match_level']}")
 
-    if 'postal_code' in item:
-        output.append(f"郵便番号: {item['postal_code']}")
+    # Postal code (API uses post_code)
+    if 'post_code' in item:
+        output.append(f"郵便番号: {item['post_code']}")
 
-    if 'prefecture' in item:
-        output.append(f"都道府県: {item['prefecture']}")
+    # Prefecture (API uses address2)
+    if 'address2' in item:
+        output.append(f"都道府県: {item['address2']}")
 
-    if 'municipality' in item:
-        output.append(f"市区町村: {item['municipality']}")
+    # Municipality (API uses address3)
+    if 'address3' in item:
+        output.append(f"市区町村: {item['address3']}")
 
-    if 'zid' in item:
-        output.append(f"ZID: {item['zid']}")
+    # District (API uses address4)
+    if 'address4' in item:
+        output.append(f"町域: {item['address4']}")
+
+    # Building ZID (nested in building_info)
+    if 'building_info' in item and item['building_info']:
+        building = item['building_info']
+        if 'zid' in building:
+            output.append(f"ZID: {building['zid']}")
 
     return "\n".join(output)
 
