@@ -9,9 +9,11 @@ import json
 import sys
 import os
 import argparse
+import warnings
 from pathlib import Path
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
+from urllib3.exceptions import InsecureRequestWarning
 
 
 class ZenrinGeocoder:
@@ -22,7 +24,8 @@ class ZenrinGeocoder:
                  api_key: Optional[str] = None,
                  auth_method: str = "ip",
                  referer: Optional[str] = None,
-                 token: Optional[str] = None):
+                 token: Optional[str] = None,
+                 verify_ssl: bool = True):
         """
         Initialize the geocoder
 
@@ -32,13 +35,19 @@ class ZenrinGeocoder:
             auth_method: Authentication method ('ip', 'referer', or 'bearer')
             referer: Referer URL (required when auth_method='referer')
             token: OAuth 2.0 token (required when auth_method='bearer')
+            verify_ssl: Verify SSL certificates (default: True)
         """
         self.api_domain = api_domain
         self.api_key = api_key
         self.auth_method = auth_method
         self.referer = referer
         self.token = token
+        self.verify_ssl = verify_ssl
         self.endpoint = f"https://{api_domain}/data-coding/ac_standard"
+
+        # Suppress SSL warnings if verification is disabled
+        if not self.verify_ssl:
+            warnings.simplefilter('ignore', InsecureRequestWarning)
 
         # Setup proxy configuration from environment variables
         self.proxies = {}
@@ -102,7 +111,8 @@ class ZenrinGeocoder:
 
         try:
             response = requests.post(self.endpoint, data=params, headers=headers,
-                                   proxies=self.proxies if self.proxies else None, timeout=10)
+                                   proxies=self.proxies if self.proxies else None,
+                                   verify=self.verify_ssl, timeout=10)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -137,7 +147,8 @@ class ZenrinGeocoder:
 
         try:
             response = requests.post(self.endpoint, data=params, headers=headers,
-                                   proxies=self.proxies if self.proxies else None, timeout=30)
+                                   proxies=self.proxies if self.proxies else None,
+                                   verify=self.verify_ssl, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -237,6 +248,8 @@ Examples:
                         help='Geodetic system [env: ZENRIN_DATUM]')
     parser.add_argument('--match-level', choices=['TOD', 'SHK', 'OAZ', 'AZC', 'GIK', 'TBN'],
                         help='Minimum matching hierarchy [env: ZENRIN_MATCH_LEVEL]')
+    parser.add_argument('--no-verify-ssl', action='store_true',
+                        help='Disable SSL certificate verification (not recommended) [env: ZENRIN_VERIFY_SSL]')
 
     args = parser.parse_args()
 
@@ -248,6 +261,11 @@ Examples:
     token = args.token or os.getenv('ZENRIN_TOKEN')
     datum = args.datum or os.getenv('ZENRIN_DATUM', 'JGD')
     match_level = args.match_level or os.getenv('ZENRIN_MATCH_LEVEL')
+
+    # Handle SSL verification (command line flag or env var)
+    verify_ssl = not args.no_verify_ssl
+    if os.getenv('ZENRIN_VERIFY_SSL', '').lower() == 'false':
+        verify_ssl = False
 
     # Validate required parameters
     if not domain:
@@ -266,7 +284,8 @@ Examples:
         api_key=api_key,
         auth_method=auth_method,
         referer=referer,
-        token=token
+        token=token,
+        verify_ssl=verify_ssl
     )
 
     # Interactive mode

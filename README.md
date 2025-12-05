@@ -10,6 +10,7 @@ Japanese address geocoding program using ZENRIN Maps API. Converts Japanese addr
 - JSON output support
 - Multiple authentication methods (IP, Referer, OAuth 2.0)
 - Proxy support (HTTP/HTTPS)
+- SSL certificate verification (can be disabled for corporate environments)
 - Returns coordinates (経度, 緯度), match level, and other address information
 - Environment variable configuration via `.env` file
 
@@ -86,6 +87,10 @@ ZENRIN_AUTH_METHOD=ip
 # Proxy Configuration (optional)
 # http_proxy=http://proxy.example.com:8080
 # https_proxy=http://proxy.example.com:8080
+
+# SSL Verification (optional)
+# Set to false to disable SSL certificate verification (not recommended for production)
+# ZENRIN_VERIFY_SSL=false
 
 # Optional Settings
 ZENRIN_DATUM=JGD
@@ -169,6 +174,33 @@ The program reads the `http_proxy` and `https_proxy` environment variables via `
 
 **Note**: Both HTTP and HTTPS APIs typically use the `http://` proxy protocol, even for HTTPS traffic. Check your proxy server documentation for the correct configuration.
 
+## SSL Certificate Verification
+
+By default, the program verifies SSL certificates. If you encounter SSL certificate errors (common in corporate environments with proxy servers or self-signed certificates), you can disable SSL verification:
+
+### Option 1: Using `.env` file
+
+```bash
+# Disable SSL verification
+ZENRIN_VERIFY_SSL=false
+```
+
+### Option 2: Using command line
+
+```bash
+python geocoding.py --no-verify-ssl --address "東京都千代田区淡路町2-101"
+```
+
+**⚠️ Security Warning**: Disabling SSL verification is not recommended for production environments as it makes your connection vulnerable to man-in-the-middle attacks. Only use this option if:
+- You're in a development/testing environment
+- You're behind a corporate proxy with SSL inspection
+- You understand the security implications
+
+**Better alternatives:**
+1. Install your corporate proxy's CA certificate on your system
+2. Use Python's `certifi` package and update your certificate bundle
+3. Contact your IT department to obtain the proper certificates
+
 ## Usage
 
 ### Interactive Mode
@@ -228,6 +260,8 @@ All options can be set via command-line arguments or in the `.env` file. Command
   - **Env**: `ZENRIN_DATUM`
 - `--match-level`: Minimum matching hierarchy (TOD/SHK/OAZ/AZC/GIK/TBN)
   - **Env**: `ZENRIN_MATCH_LEVEL`
+- `--no-verify-ssl`: Disable SSL certificate verification (not recommended)
+  - **Env**: `ZENRIN_VERIFY_SSL=false`
 
 ## Output Format
 
