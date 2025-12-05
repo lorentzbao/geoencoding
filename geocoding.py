@@ -98,12 +98,15 @@ class ZenrinGeocoder:
         """
         params = {
             'word': address,
-            'enc': enc,
-            'use_kana': use_kana,
-            'use_multi_addr': use_multi_addr,
+            'enc': str(enc),
             'datum': datum
         }
 
+        # Add optional boolean parameters (convert Python bool to API format)
+        if use_kana:
+            params['use_kana'] = 'true'
+        if use_multi_addr:
+            params['use_multi_addr'] = 'true'
         if match_level:
             params['match_level'] = match_level
 
@@ -115,6 +118,14 @@ class ZenrinGeocoder:
                                    verify=self.verify_ssl, timeout=10)
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.HTTPError as e:
+            # Return detailed error information
+            error_detail = {
+                'error': str(e),
+                'status_code': response.status_code,
+                'response_text': response.text[:500] if hasattr(response, 'text') else None
+            }
+            return error_detail
         except requests.exceptions.RequestException as e:
             return {'error': str(e)}
 
@@ -134,12 +145,15 @@ class ZenrinGeocoder:
 
         params = {
             'word': ','.join(addresses),
-            'enc': kwargs.get('enc', 0),
-            'use_kana': kwargs.get('use_kana', False),
-            'use_multi_addr': kwargs.get('use_multi_addr', False),
+            'enc': str(kwargs.get('enc', 0)),
             'datum': kwargs.get('datum', 'JGD')
         }
 
+        # Add optional boolean parameters
+        if kwargs.get('use_kana'):
+            params['use_kana'] = 'true'
+        if kwargs.get('use_multi_addr'):
+            params['use_multi_addr'] = 'true'
         if 'match_level' in kwargs:
             params['match_level'] = kwargs['match_level']
 
@@ -151,6 +165,14 @@ class ZenrinGeocoder:
                                    verify=self.verify_ssl, timeout=30)
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.HTTPError as e:
+            # Return detailed error information
+            error_detail = {
+                'error': str(e),
+                'status_code': response.status_code,
+                'response_text': response.text[:500] if hasattr(response, 'text') else None
+            }
+            return [error_detail]
         except requests.exceptions.RequestException as e:
             return [{'error': str(e)}]
 
@@ -158,7 +180,12 @@ class ZenrinGeocoder:
 def format_result(result: Dict) -> str:
     """Format geocoding result for display"""
     if 'error' in result:
-        return f"エラー: {result['error']}"
+        error_msg = f"エラー: {result['error']}"
+        if 'status_code' in result:
+            error_msg += f"\nステータスコード: {result['status_code']}"
+        if 'response_text' in result and result['response_text']:
+            error_msg += f"\nレスポンス: {result['response_text']}"
+        return error_msg
 
     output = []
     output.append("=" * 60)
